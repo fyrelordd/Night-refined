@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Characters - Squad Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Philosopher:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Philosopher', sans-serif;
+            background: linear-gradient(to bottom, #0a0e27, #1a1a2e, #16213e);
+            color: #e0e0e0;
+        }
+        
+        h1, h2, h3, .cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 20px rgba(100, 181, 246, 0.8), 0 0 40px rgba(100, 181, 246, 0.4);
+        }
+        
+        .gold-text {
+            color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+        
+        .budget-display {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .budget-display:hover {
+            border-color: rgba(212, 175, 55, 0.9);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .search-container {
+            max-width: 350px;
+            position: relative;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 2px solid #475569;
+            border-radius: 0.5rem;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            font-family: 'Philosopher', sans-serif;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 15px rgba(100, 181, 246, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64b5f6;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .clear-search:hover {
+            background: #ef4444;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .clear-search.show {
+            display: flex;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .house-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 3px solid #334155;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: 1rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .house-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.25;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+        
+        .house-card:hover .house-bg {
+            opacity: 0.4;
+        }
+        
+        .house-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: #d4af37;
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.4);
+        }
+
+        .house-content {
+            position: relative;
+            text-align: center;
+            width: 100%;
+        }
+
+        .house-sigil {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .house-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+        }
+
+        .house-motto {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .house-count {
+            font-size: 0.875rem;
+            color: #64b5f6;
+        }
+        
+        .character-card {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #334155;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-radius: 0.75rem;
+            animation: cardEnter 0.5s ease-out backwards;
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .character-card:hover {
+            border-color: #d4af37;
+            box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .character-card.selected {
+            border-color: #10b981;
+            box-shadow: 0 8px 35px rgba(16, 185, 129, 0.4);
+        }
+        
+        .character-card.selected .character-portrait {
+            border-color: #10b981;
+        }
+        
+        .character-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .character-portrait {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #334155, #475569);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            border-bottom: 3px solid #475569;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-portrait-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            filter: blur(1px);
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+        
+        .character-card:hover .character-portrait-bg {
+            filter: blur(0px);
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+        
+        .character-card.selected .character-portrait-bg {
+            filter: blur(0px);
+            opacity: 0.9;
+        }
+        
+        .character-portrait::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                rgba(15, 23, 42, 0.3) 0%, 
+                rgba(15, 23, 42, 0.5) 50%,
+                rgba(15, 23, 42, 0.9) 100%);
+            z-index: 1;
+        }
+        
+        .character-card.selected .character-portrait::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(16, 185, 129, 0.15);
+            z-index: 2;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.25; }
+        }
+        
+        .character-portrait > span {
+            position: relative;
+            z-index: 3;
+        }
+        
+        .character-info {
+            padding: 1.25rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 20px rgba(100, 181, 246, 0.6);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #475569, #64748b);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+        }
+        
+        .price-multiplier {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(220, 38, 38, 0.5);
+        }
+        
+        .quote-text {
+            font-style: italic;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-left: 3px solid #475569;
+            padding-left: 0.75rem;
+            margin: 0.75rem 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header with Budget -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black bg-opacity-90 backdrop-blur-sm border-b border-blue-900">
+        <div class="container mx-auto px-4 md:px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex-1">
+                    <h1 class="text-base md:text-xl font-bold cinzel glow-text">The Long Night</h1>
+                    <p class="text-xs text-gray-400 hidden md:block">Characters Selection</p>
+                </div>
+                <div class="flex items-center gap-3 md:gap-6">
+                    <div class="text-right">
+                        <p class="text-sm md:text-base font-bold text-blue-300 cinzel"><span id="character-count">0</span>/3</p>
+                    </div>
+                    <div class="budget-display px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 border border-opacity-70">
+                        <span class="text-lg md:text-xl">💰</span>
+                        <p class="text-sm md:text-base font-bold gold-text cinzel"><span id="budget">100</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6" style="padding-top: 6.5rem;">
+
+        <!-- House Selection View -->
+        <div id="house-view" class="mt-8 pb-24">
+            
+            <!-- Search Bar - Top Right -->
+            <div class="flex justify-end mb-4">
+                <div class="search-container">
+                    <span class="search-icon"><img src="./search.svg" alt="search" /></span>
+                    <input 
+                        type="text" 
+                        id="character-search" 
+                        class="search-input" 
+                        placeholder="Search characters..."
+                        autocomplete="off"
+                    />
+                    <button class="clear-search" id="clear-search" onclick="clearSearch()">✕</button>
+                </div>
+            </div>
+
+            <h2 class="text-3xl md:text-4xl font-bold cinzel text-center mb-3 glow-text">Choose Your House</h2>
+            <p class="text-center text-gray-300 mb-12 text-sm md:text-base">Select a Great House to view its champions</p>
+            
+            <!-- Search Results Container -->
+            <div id="search-results" class="hidden mb-12">
+                <div class="flex justify-between items-center mb-6 mt-8">
+                    <h3 class="text-xl font-bold cinzel gold-text">Search Results</h3>
+                    <button onclick="clearSearch()" class="text-sm text-blue-300 hover:text-blue-200">
+                        ← Back to Houses
+                    </button>
+                </div>
+                <div id="search-results-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Search results will appear here -->
+                </div>
+                <div id="no-results" class="empty-state hidden">
+                    <div class="empty-state-icon"></div>
+                    <p class="text-xl font-bold cinzel mb-2 text-gray-400">No Champions Found</p>
+                    <p class="text-sm text-gray-500">Try a different search term</p>
+                </div>
+            </div>
+
+            <!-- House Grid -->
+            <div id="house-grid">
+                <div class="grid md:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto">
+                    <!-- Houses will be generated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation Button -->
+            <div class="flex justify-center mt-16 mb-12">
+                <button onclick="goToHomepage()" class="btn-back px-8 py-3 rounded-lg font-bold cinzel text-sm md:text-base">
+                    ← Back to Squad
+                </button>
+            </div>
+        </div>
+
+        <!-- Character Selection View -->
+        <div id="character-view" class="hidden pb-24">
+            <h2 class="text-3xl md:text-4xl font-bold cinzel glow-text text-center mb-8" id="house-title" style="margin-top: 2rem;"></h2>
+            
+            <div class="flex justify-start mb-8">
+                <button onclick="backToHouses()" class="btn-back px-6 py-2 rounded-lg font-semibold cinzel text-sm md:text-base">
+                    ← Back to Houses
+                </button>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8" id="characters-container">
+                <!-- Characters will be generated by JS -->
+            </div>
+
+            <!-- Navigation Button -->
+            <div class="flex justify-center mt-16 mb-12">
+                <button onclick="goToHomepage()" class="btn-back px-8 py-3 rounded-lg font-bold cinzel text-sm md:text-base">
+                    ← Back to Squad
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default game state
+        const DEFAULT_STATE = {
+            budget: 100,
+            maxBudget: 100,
+            squad: {
+                characters: [],
+                magicalBeings: [],
+                weapons: []
+            },
+            houseCounts: {},
+            currentView: 'characters'
+        };
+
+        // Initialize game state
+        let gameState = loadGameState();
+
+        // Load game state with validation
+        function loadGameState() {
+            try {
+                const saved = localStorage.getItem('asoiafGameState');
+                if (!saved) return {...DEFAULT_STATE};
+                
+                const parsed = JSON.parse(saved);
+                
+                if (typeof parsed.budget !== 'number' || 
+                    !Array.isArray(parsed.squad?.characters) ||
+                    typeof parsed.houseCounts !== 'object') {
+                    console.warn('Invalid saved state, using defaults');
+                    return {...DEFAULT_STATE};
+                }
+                
+                return parsed;
+            } catch (error) {
+                console.error('Error loading game state:', error);
+                return {...DEFAULT_STATE};
+            }
+        }
+
+        // Save game state
+        function saveGameState() {
+            try {
+                localStorage.setItem('asoiafGameState', JSON.stringify(gameState));
+            } catch (error) {
+                console.error('Error saving game state:', error);
+            }
+        }
+ 
+        // Character Database
+        const houses = {
+            stark: {
+                name: "House Stark",
+                sigil: "",
+                motto: "Winter is Coming",
+                color: "#8B9DC3",
+                image: "https://cdn.dribbble.com/userupload/23460901/file/original-f1da6da5fb0b517d993b933126e59fa3.gif",
+                members: [
+                    { id: "stark3", name: "Arya Stark", price: 15, score: 12, house: "stark", quote: "I was. I'm not now", image: "https://i.pinimg.com/1200x/ab/dc/16/abdc1625e1e1be330cf270c476481291.jpg" },
+                    { id: "stark5", name: "Bran Stark", price: 15, score: 15, house: "stark", quote: "I'm here, only I'm broken. Will you fix me?", image: "https://i.pinimg.com/736x/2c/dd/4a/2cdd4a20544072ea217e92f4e46e722f.jpg" },
+                    { id: "stark4", name: "Cregan Stark", price: 15, score: 18, house: "stark", quote: "They died the day we marched, boy", image: "https://i.pinimg.com/736x/26/9f/7e/269f7e4cf2c49cc5b57453f038469da1.jpg" },
+                    { id: "stark1", name: "Eddard Stark", price: 12, score: 12, house: "stark", quote: "Winter is coming", image: "https://i.pinimg.com/1200x/a6/e0/77/a6e077396325eddf195f67ba79badab5.jpg" },
+                    { id: "stark2", name: "Robb Stark", price: 12, score: 12, house: "stark", quote: "I have won every battle, yet somehow I'm losing the war", image: "https://i.pinimg.com/736x/25/86/14/2586140dc8411bea815c3c4fda7cfc7f.jpg" }
+                ]
+            },
+            lannister: {
+                name: "House Lannister",
+                sigil: "",
+                motto: "Hear Me Roar",
+                color: "#B8860B",
+                image: "./lannister.gif",
+                members: [
+                    { id: "lann2", name: "Jaime Lannister", price: 15, score: 18, house: "lannister", quote: "There are no men like me. There's only me", image: "https://i.pinimg.com/736x/82/e5/c5/82e5c50c00eb121faf0695bed90117c5.jpg" },
+                    { id: "lann1", name: "Tywin Lannister", price: 12, score: 10, house: "lannister", quote: "Some battles are won with swords and spears, others with quills and ravens", image: "https://i.pinimg.com/736x/5f/a1/af/5fa1af9878bf4eec0f01e756c9125963.jpg" },
+                    { id: "lann3", name: "Cersei Lannister", price: 10, score: 0, house: "lannister", quote: "When you play the game of thrones, you win or you die", image: "https://awoiaf.westeros.org/images/thumb/0/07/Katherine_Dinger_CLannister.jpg/350px-Katherine_Dinger_CLannister.jpg" },
+                    { id: "lann5", name: "Gerion Lannister", price: 10, score: 10, house: "lannister", quote: "Gerion made japes", image: "https://familytrees.genopro.com/1972213/media/GerionLannister.jpg" },
+                    { id: "lann4", name: "Tyrion Lannister", price: 10, score: 5, house: "lannister", quote: "I drink and I know things", image: "https://i.pinimg.com/1200x/32/d1/1b/32d11b78ba4749d8bbd17da859cad458.jpg" },
+                ]
+            }, 
+            targaryen: {
+                name: "House Targaryen",
+                sigil: "",
+                motto: "Fire and Blood",
+                color: "#DC143C",
+                image: "https://i.pinimg.com/originals/e2/0f/57/e20f57748b0795259a8efd63fbfc7ba2.gif",
+                members: [
+                    { id: "targ3", name: "Aegon The Conqueror", price: 20, score: 20, house: "targaryen", quote: "When the sun sets, your line shall end", image: "https://i.pinimg.com/1200x/59/aa/6c/59aa6c9f148bc216d715b139e99fbee1.jpg" },
+                    { id: "targ1", name: "Daenerys Targaryen", price: 20, score: 18, house: "targaryen", quote: "If I look back I am lost", image: "https://i.pinimg.com/1200x/97/fb/26/97fb26d0e353197b49e9744c9b92fd41.jpg" }, 
+                    { id: "targ4", name: "Aemond Targaryen", price: 15, score: 15, house: "targaryen", quote: "I may have lost an eye, but I gained a dragon", image: "./aemond.jpg" },
+                    { id: "targ5", name: "Visenya Targaryen", price: 15, score: 18, house: "targaryen", quote: "Your guards are slow and lazy", image: "https://i.pinimg.com/736x/2e/54/10/2e541002887cf8d8d2987654ce5bea66.jpg" },
+                    { id: "targ2", name: "Aerion Targaryen", price: 10, score: 10, house: "targaryen", quote: "He thinks he's a dragon in human form, you know", image: "https://awoiaf.westeros.org/images/6/6d/Aerion_targaryen_by_arkoniel.jpg" }
+                ]
+            },
+            baratheon: {
+                name: "House Baratheon",
+                sigil: "",
+                motto: "Ours is the Fury",
+                color: "#FFD700",
+                image: "./baratheon.gif",
+                members: [
+                    { id: "bara5", name: "Lyonel Baratheon", price: 15, score: 15, house: "baratheon", quote: "He was the finest fighter of his day", image: "./lyonel.jpg" },
+                    { id: "bara4", name: "Orys Baratheon", price: 15, score: 15, house: "baratheon", quote: "My shield, my stalwart, my strong right hand", image: "https://i.pinimg.com/1200x/4a/c9/37/4ac937c989f33be0e27fe92a444a2b6e.jpg" },
+                    { id: "bara1", name: "Robert Baratheon", price: 15, score: 18, house: "baratheon", quote: "A man who loved nothing better than war", image: "https://i.pinimg.com/1200x/c4/ac/f6/c4acf6175a6c1b68f143d3c17c4efbb5.jpg" },
+                    { id: "bara2", name: "Stannis Baratheon", price: 15, score: 14, house: "baratheon", quote: "Demons made of snow and ice and cold", image: "https://i.pinimg.com/1200x/72/cf/82/72cf82dd5d62582571863d12d52190fb.jpg" },
+                    { id: "bara3", name: "Renly Baratheon", price: 10, score: 5, house: "baratheon", quote: "Younger, bolder, and far more comely", image: "https://i.redd.it/ydiae7olih881.jpg" },
+                ]
+            },
+            greyjoy: {
+                name: "House Greyjoy",
+                sigil: "",
+                motto: "We Do Not Sow",
+                color: "#2F4F4F",
+                image: "./greyjoy.gif",
+                members: [
+                    { id: "grey4", name: "Euron Greyjoy", price: 15, score: 12, house: "greyjoy", quote: "From Ib to Asshai, when men see my sails, they pray", image: "https://awoiaf.westeros.org/images/thumb/e/e4/Euron-mike-hallstein-infobox.jpg/337px-Euron-mike-hallstein-infobox.jpg" },
+                    { id: "grey1", name: "Aeron Greyjoy", price: 10, score: 5, house: "greyjoy", quote: "What is dead may never die", image: "https://awoiaf.westeros.org/images/3/39/Anders_Finer_Aeron_Damphair.jpg" },
+                    { id: "grey3", name: "Asha Greyjoy", price: 10, score: 10, house: "greyjoy", quote: "No fight is hopeless till it has been fought", image: "https://i.pinimg.com/736x/6c/d8/b7/6cd8b73ecbc0fed7ea1b67797acce137.jpg" },
+                    { id: "grey2", name: "Theon Greyjoy", price: 10, score: 10, house: "greyjoy", quote: "A dead enemy is a thing of beauty", image: "https://i.pinimg.com/1200x/0f/64/2d/0f642dd64328e34618973720a8efd113.jpg" },
+                    { id: "grey5", name: "Victarion Greyjoy", price: 10, score: 12, house: "greyjoy", quote: "Blood and steel win wars", image: "https://i.pinimg.com/1200x/c5/48/16/c54816443c71cb19044bce7ed90489de.jpg" }
+                ]
+            },
+            others: {
+                name: "Others",
+                sigil: "",
+                motto: "Valar Morghulis",
+                color: "#696969",
+                image: "https://i.pinimg.com/originals/68/d8/66/68d8666fdf4aaef8c20791b35fb3070b.gif",
+                members: [
+                    { id: "oth10", name: "Coldhands", price: 20, score: 18, house: "others", quote: "They will not trouble you", image: "https://awoiaf.westeros.org/images/thumb/3/3b/Zippo514_Coldhands.jpg/350px-Zippo514_Coldhands.jpg" },
+                    { id: "oth16", name: "Robert Strong", price: 20, score: 20, house: "others", quote: "No living man will withstand him", image: "https://awoiaf.westeros.org/images/thumb/5/5c/Alexandre_Dainche_Ser_Robert_Strong.png/349px-Alexandre_Dainche_Ser_Robert_Strong.png" },
+                    { id: "oth18", name: "Melisandre", price: 20, score: 15, house: "others", quote: "The night is dark and full of terrors", image: "https://i.pinimg.com/1200x/e0/43/17/e043177988fa0d1cbabba11f9739adb9.jpg" },
+                    { id: "oth8", name: "Wun Wun", price: 20, score: 20, house: "others", quote: "Kneel queen. Little queen", image: "https://i.pinimg.com/736x/cd/32/73/cd3273626e3ed33d64452abb86b23ab8.jpg" },
+                    { id: "oth1", name: "Arthur Dayne", price: 18, score: 20, house: "others", quote: "And now it begins", image: "https://i.pinimg.com/736x/00/f5/69/00f5699ea54dcbe718b6b72982af6f29.jpg" },
+                    { id: "oth13", name: "Barristan Selmy", price: 18, score: 18, house: "others", quote: "I am a knight. I shall die a knight", image: "https://awoiaf.westeros.org/images/thumb/9/9a/Mike_Capprotti_Ser_Barristan.jpg/350px-Mike_Capprotti_Ser_Barristan.jpg" },
+                    { id: "oth11", name: "Daemon I Blackfyre", price: 18, score: 18, house: "others", quote: "When Prince Daemon had Blackfyre in hand, there was not a man equal him", image: "https://awoiaf.westeros.org/images/thumb/6/6e/Daemon_Blackfyre.jpg/428px-Daemon_Blackfyre.jpg" },
+                    { id: "oth9", name: "Sandoq the Shadow", price: 18, score: 15, house: "others", quote: "Sandoq is no beast. He cannot speak, but he hears and he obeys", image: "https://awoiaf.westeros.org/images/thumb/a/ad/Sandoq.jpg/300px-Sandoq.jpg" },
+                    { id: "oth3", name: "Drogo", price: 15, score: 14, house: "others", quote: "I am khal. I spit on pain and drink what I like", image: "https://awoiaf.westeros.org/images/thumb/a/a1/MagaliVilleneuve_khal_drogoII.jpg/350px-MagaliVilleneuve_khal_drogoII.jpg" },
+                    { id: "oth12", name: "Mance Rayder", price: 15, score: 14, house: "others", quote: "The Wall can stop an army, but not a man alone", image: "https://awoiaf.westeros.org/images/d/d2/Diego_Gisbert_Llorens_Mance_Rayder.jpg" },
+                    { id: "oth7", name: "Oberyn Martell", price: 15, score: 18, house: "others", quote: "If you die before you say her name, I will hunt you through all seven hells", image: "https://awoiaf.westeros.org/images/f/fc/MagaliVilleneuve_Prince_Oberyn_Nymeros_Martell.jpg" },
+                    { id: "oth5", name: "Sandor Clegane", price: 15, score: 15, house: "others", quote: "Killing is the sweetest thing there is", image: "https://awoiaf.westeros.org/images/thumb/7/7b/MiguelRegod%C3%B3nHarkness_theHound.jpg/350px-MiguelRegod%C3%B3nHarkness_theHound.jpg" },
+                    { id: "oth19", name: "Beric Dondarrion", price: 12, score: 10, house: "others", quote: "Six times is too many", image: "https://i.pinimg.com/736x/1b/c6/44/1bc644477faa37c0ba6c48aa559e170d.jpg" },
+                    { id: "oth4", name: "Brienne of Tarth", price: 12, score: 12, house: "others", quote: "Fighting is better than this waiting", image: "https://awoiaf.westeros.org/images/thumb/0/07/Brienne_by_quickreaver.jpg/350px-Brienne_by_quickreaver.jpg" },
+                    { id: "oth6", name: "Jon Snow", price: 12, score: 12, house: "others", quote: "There's no shame in fear, my father told me", image: "https://i.pinimg.com/736x/97/69/19/9769196caa6efcae0dae0e57a0787489.jpg" },
+                    { id: "tyre3", name: "Loras Tyrell", price: 12, score: 10, house: "tyrell", quote: "Give me the command, Your Grace", image: "https://i.redd.it/g8zssq7wjai51.jpg" },
+                    { id: "oth15", name: "Corlys Velaryon", price: 10, score: 12, house: "others", quote: "Mayhaps the Seven have preserved me for this fight", image: "https://awoiaf.westeros.org/images/thumb/6/69/Z37tvql2m6m71.png/437px-Z37tvql2m6m71.png" },
+                    { id: "oth14", name: "Duncan The Tall", price: 10, score: 12, house: "others", quote: "Oak and iron, guard me well, or else I'm dead and doomed to hell", image: "https://i.pinimg.com/736x/e4/44/65/e44465e2c1f1b260640f63c3f3a9eb56.jpg" },
+                    { id: "oth2", name: "Jeor Mormont", price: 10, score: 8, house: "others", quote: "The cold winds are rising", image: "https://i.pinimg.com/736x/2b/08/2b/2b082bdb7809d50189d1d9b5d027b6b8.jpg" },
+                    { id: "oth17", name: "Steffon Fossoway", price: 10, score: 10, house: "others", quote: "Knights like Ser Steffon had sharp eyes to find a man's weakness at a glance", image: "https://awoiaf.westeros.org/images/thumb/2/28/Raymun_and_Steffon_Fossoway_by_Even_Mehl_Amundsen.jpg/350px-Raymun_and_Steffon_Fossoway_by_Even_Mehl_Amundsen.jpg" },
+                ]
+            }
+        };
+
+        // Get all characters for search
+        function getAllCharacters() {
+            let allChars = [];
+            Object.entries(houses).forEach(([houseKey, house]) => {
+                house.members.forEach(char => {
+                    allChars.push({...char, houseName: house.name, houseKey: houseKey});
+                });
+            });
+            return allChars;
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('character-search');
+        const clearBtn = document.getElementById('clear-search');
+        const searchResults = document.getElementById('search-results');
+        const searchResultsGrid = document.getElementById('search-results-grid');
+        const noResults = document.getElementById('no-results');
+        const houseGrid = document.getElementById('house-grid');
+
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim().toLowerCase();
+            
+            if (query.length === 0) {
+                clearSearch();
+                return;
+            }
+
+            clearBtn.classList.add('show');
+            
+            // Filter characters
+            const allCharacters = getAllCharacters();
+            const matches = allCharacters.filter(char => {
+                return char.name.toLowerCase().includes(query) || 
+                       char.houseName.toLowerCase().includes(query) ||
+                       char.houseKey.toLowerCase().includes(query);
+            });
+
+            // Show results
+            houseGrid.classList.add('hidden');
+            searchResults.classList.remove('hidden');
+            
+            if (matches.length === 0) {
+                searchResultsGrid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+            } else {
+                searchResultsGrid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                
+                searchResultsGrid.innerHTML = '';
+                matches.forEach((char, index) => {
+                    const card = createCharacterCard(char);
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    searchResultsGrid.appendChild(card);
+                });
+            }
+        });
+
+        // Keyboard shortcut: Focus search on '/' key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        function clearSearch() {
+            searchInput.value = '';
+            clearBtn.classList.remove('show');
+            searchResults.classList.add('hidden');
+            houseGrid.classList.remove('hidden');
+        }
+
+        // Initialize house view
+        function initHouseView() {
+            const houseView = document.querySelector('#house-grid .grid');
+            houseView.innerHTML = '';
+            
+            Object.entries(houses).forEach(([key, house]) => {
+                const card = document.createElement('div');
+                card.className = 'house-card';
+                card.onclick = () => showHouseCharacters(key);
+                card.innerHTML = `
+                    <div class="house-bg" style="background-image: url('${house.image || ''}');"></div>
+                    <div class="house-content">
+                        <div class="house-sigil">${house.sigil}</div>
+                        <div class="house-name" style="color: ${house.color}">${house.name}</div>
+                        ${house.motto ? `<div class="house-motto">"${house.motto}"</div>` : ''}
+                        <div class="house-count">${house.members.length} Champions</div>
+                    </div>
+                `;
+                houseView.appendChild(card);
+            });
+        }
+
+        // Show characters from selected house
+        function showHouseCharacters(houseKey) {
+            const house = houses[houseKey];
+            document.getElementById('house-view').classList.add('hidden');
+            document.getElementById('character-view').classList.remove('hidden');
+            document.getElementById('house-title').textContent = house.name;
+            
+            const container = document.getElementById('characters-container');
+            container.innerHTML = '';
+            
+            house.members.forEach(character => {
+                const card = createCharacterCard(character);
+                container.appendChild(card);
+            });
+        }
+
+        // Create character card
+        function createCharacterCard(character) {
+            const card = document.createElement('div');
+            const isSelected = gameState.squad.characters.find(c => c.id === character.id);
+            const canAfford = gameState.budget >= calculatePrice(character);
+            const canSelect = gameState.squad.characters.length < 3 && canAfford;
+            const finalPrice = calculatePrice(character);
+            const multiplier = getPriceMultiplier(character.house);
+            
+            card.className = `character-card ${isSelected ? 'selected' : ''} ${!canSelect && !isSelected ? 'disabled' : ''}`;
+            card.innerHTML = `
+                ${multiplier > 1 ? `<span class="price-multiplier">${multiplier}x PRICE</span>` : ''}
+                <div class="character-portrait">
+                    ${character.image 
+                        ? `<div class="character-portrait-bg" style="background-image: url('${character.image}');"></div>` 
+                        : `<span>👤</span>`}
+                </div>
+                <div class="character-info">
+                    <h4 class="text-lg font-bold cinzel text-center mb-2">${character.name}</h4>
+                    <p class="quote-text">"${character.quote}"</p>
+                    <div class="mt-auto">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-400 text-xs">Price:</span>
+                            <span class="text-xl font-bold gold-text">${finalPrice} 💰</span>
+                        </div>
+                        ${multiplier > 1 ? `<p class="text-xs text-red-400 text-center mb-3">Base: ${character.price} (${multiplier}x)</p>` : ''}
+                        ${isSelected ? 
+                            `<button onclick="removeCharacter('${character.id}')" class="w-full px-3 py-2 text-xs md:text-sm bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg font-bold transition-all">✕ Remove</button>` :
+                            `<button onclick="addCharacter('${character.id}')" ${!canSelect ? 'disabled' : ''} class="w-full px-3 py-2 text-xs md:text-sm btn-primary rounded-lg font-bold">+ Add</button>`
+                        }
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Calculate price with multiplier
+        function calculatePrice(character) {
+            const multiplier = getPriceMultiplier(character.house);
+            return Math.round(character.price * multiplier);
+        }
+
+        // Get price multiplier based on house count
+        function getPriceMultiplier(house) {
+            const count = gameState.houseCounts[house] || 0;
+            if (count === 0) return 1;
+            if (count === 1) return 1.5;
+            return 2;
+        }
+
+        // Add character to squad
+        function addCharacter(characterId) {
+            if (gameState.squad.characters.length >= 3) {
+                alert('You can only select 3 characters!');
+                return;
+            }
+            
+            let character = null;
+            for (let house in houses) {
+                character = houses[house].members.find(c => c.id === characterId);
+                if (character) break;
+            }
+            
+            const finalPrice = calculatePrice(character);
+            
+            if (gameState.budget < finalPrice) {
+                alert('Not enough gold!');
+                return;
+            }
+            
+            gameState.squad.characters.push({...character, paidPrice: finalPrice});
+            gameState.budget -= finalPrice;
+            gameState.houseCounts[character.house] = (gameState.houseCounts[character.house] || 0) + 1;
+            
+            saveGameState();
+            updateDisplay();
+            
+            // Refresh current view
+            if (document.getElementById('search-results').classList.contains('hidden')) {
+                const currentHouse = Object.keys(houses).find(key => 
+                    houses[key].members.some(c => c.id === characterId)
+                );
+                showHouseCharacters(currentHouse);
+            } else {
+                // Refresh search results
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+
+        // Remove character from squad
+        function removeCharacter(characterId) {
+            const character = gameState.squad.characters.find(c => c.id === characterId);
+            if (!character) return;
+            
+            gameState.budget += character.paidPrice;
+            gameState.houseCounts[character.house]--;
+            gameState.squad.characters = gameState.squad.characters.filter(c => c.id !== characterId);
+            
+            saveGameState();
+            updateDisplay();
+            
+            // Refresh current view
+            if (document.getElementById('search-results').classList.contains('hidden')) {
+                const currentHouse = Object.keys(houses).find(key => 
+                    houses[key].members.some(c => c.id === characterId)
+                );
+                showHouseCharacters(currentHouse);
+            } else {
+                // Refresh search results
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+
+        // Update all displays
+        function updateDisplay() {
+            document.getElementById('budget').textContent = gameState.budget;
+            document.getElementById('character-count').textContent = gameState.squad.characters.length;
+        }
+
+        // Navigation
+        function backToHouses() {
+            document.getElementById('character-view').classList.add('hidden');
+            document.getElementById('house-view').classList.remove('hidden');
+            clearSearch();
+        }
+ 
+        function goToHomepage() {
+            gameState.currentView = 'shop';
+            saveGameState();
+            window.location.href = 'forge-alliance.html';
+        }
+
+        // Add beforeunload to save state before leaving
+        window.addEventListener('beforeunload', function() {
+            saveGameState();
+        });
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            initHouseView();
+        }); 
+
+    </script>
+</body>
+</html>
