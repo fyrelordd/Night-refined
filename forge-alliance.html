@@ -207,6 +207,17 @@
     </footer>
 
     <script>
+        const CURRENT_VERSION = '2.0';
+
+function checkAndClearOldData() {
+    const savedVersion = localStorage.getItem('gameVersion');
+    if (savedVersion !== CURRENT_VERSION) {
+        localStorage.clear();
+        localStorage.setItem('gameVersion', CURRENT_VERSION);
+    }
+}
+
+checkAndClearOldData();
         // Initialize game state from localStorage
         let gameState = JSON.parse(localStorage.getItem('asoiafGameState')) || {
             budget: 100,
@@ -313,4 +324,5 @@
         });
     </script>
 </body>
+
 </html>
