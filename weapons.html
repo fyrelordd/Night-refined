@@ -232,6 +232,18 @@
     </div>
 
     <script>
+
+        const CURRENT_VERSION = '2.0';
+
+function checkAndClearOldData() {
+    const savedVersion = localStorage.getItem('gameVersion');
+    if (savedVersion !== CURRENT_VERSION) {
+        localStorage.clear();
+        localStorage.setItem('gameVersion', CURRENT_VERSION);
+    }
+}
+
+checkAndClearOldData();
         // Default game state
         const DEFAULT_STATE = {
             budget: 100,
@@ -404,4 +416,5 @@
         });
     </script>
 </body>
+
 </html>
